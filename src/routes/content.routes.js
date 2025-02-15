@@ -1,11 +1,12 @@
 import express from 'express';
 import authMiddleware from '../middlewares/authMiddleware.js';
 import {
-    deleteContent,
+    deleteContent, getContentTree,
     getFolderContent,
     getRootContent,
     submitContent,
-    updateContent
+    updateContent,
+    getContent
 } from "../controllers/content.controller.js";
 
 const router = express.Router();
@@ -13,6 +14,8 @@ const router = express.Router();
 //GET Routes
 router.get('/desktop', getRootContent);
 router.get('/folder/:parentID', getFolderContent);
+router.get('/tree', getContentTree);
+router.get('/:id', getContent);
 
 //POST Routes
 router.post('/desktop', authMiddleware, submitContent);

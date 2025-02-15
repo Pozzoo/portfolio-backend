@@ -54,7 +54,7 @@ export const loginUser = async (req, res) => {
             }
 
             req.session.user = { id: user.id, username: user.username }; // Store only essential data
-            res.json({ message: "Login successful" });
+            res.status(200).json({ message: "Login successful" });
         });
     } catch (error) {
         console.error("Login error:", error);

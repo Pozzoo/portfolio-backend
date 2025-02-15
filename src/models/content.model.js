@@ -81,3 +81,9 @@ export const getRootContents = async () => {
     const { rows } = await pool.query(query);
     return rows;
 }
+
+export const getAllContentsForTree = async () => {
+    const query = `SELECT id, parent_id, title, icon FROM contents`;
+    const { rows } = await pool.query(query);
+    return rows;
+}

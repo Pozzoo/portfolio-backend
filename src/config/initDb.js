@@ -29,7 +29,7 @@ const createTables = async () => {
                 status INTEGER[],
                 text TEXT,
                 options_bar BOOLEAN DEFAULT false,
-                functions_bar BOOLEAN DEFAULT false
+                functions_bar BOOLEAN DEFAULT false 
             );
 
             CREATE TABLE IF NOT EXISTS languages (
