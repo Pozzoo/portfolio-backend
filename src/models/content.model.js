@@ -26,14 +26,19 @@ export const createContent = async ({parentID = null, title, type, icon, can_ope
 };
 
 export const updateContentByID = async (id, updates) => {
-    const allowedFields = ["title", "type", "icon", "can_open", "tags", "langs", "status", "text", "options_bar", "functions_bar"];
+    const allowedFields = ["title", "type", "can_open", "tags", "langs", "status", "text", "options_bar", "functions_bar"];
+
     const setClauses = [];
     const values = [];
+    let paramIndex = 1;
 
-    Object.keys(updates).forEach((key, index) => {
+    Object.keys(updates).forEach((key) => {
         if (allowedFields.includes(key)) {
-            setClauses.push(key);
-            values.push(updates[index]);
+            if (updates[key]) {
+                setClauses.push(`${key} = $${paramIndex}`);
+                values.push(updates[key]);
+                paramIndex++;
+            }
         }
     });
 
@@ -41,11 +46,28 @@ export const updateContentByID = async (id, updates) => {
         throw new Error("No valid fields to update.");
     }
 
-    const query = `UPDATE contents SET (${setClauses.join(', ')}) = (${values.join(', ')}) WHERE id = ${id} RETURNING *;`;
+    values.push(id);
+
+    const query = `UPDATE contents SET ${setClauses.join(", ")} WHERE id = $${paramIndex} RETURNING *;`;
 
     const { rows } = await pool.query(query, values);
+    if (rows.length === 0) {
+        throw new Error(`Content with ID ${id} not found.`);
+    }
     return rows[0];
 };
+
+export const updateContentIconByID = async (id, buffer) => {
+    const query = `UPDATE contents SET icon = $1 WHERE id = $2 RETURNING *;`;
+
+    const { rows } = await pool.query(query, [buffer, id]);
+
+    if (rows.length === 0) {
+        throw new Error(`Content with ID ${id} not found.`);
+    }
+
+    return rows[0];
+}
 
 export const deleteContentByID = async (id) => {
     const query = `DELETE FROM contents WHERE id = $1 RETURNING *;`;
@@ -59,31 +81,52 @@ export const deleteContentByID = async (id) => {
 };
 
 export const getContentByID = async (id) => {
-    const query = `SELECT * FROM contents WHERE id = $1`;
+    const query = `SELECT id, parent_id, title, type, can_open, tags, langs, status, text, options_bar, functions_bar FROM contents WHERE id = $1`;
     const { rows } = await pool.query(query, [id]);
+
+    if (rows.length === 0) {
+        throw new Error(`Content with ID ${id} not found.`);
+    }
+
     return rows[0];
 }
 
 export const getContentByTitle = async (title) => {
-    const query = `SELECT * FROM contents WHERE title = $1;`;
+    const query = `SELECT id, parent_id, title, type, can_open, tags, langs, status, text, options_bar, functions_bar FROM contents WHERE title = $1;`;
     const { rows } = await pool.query(query, [title]);
+
+    if (rows.length === 0) {
+        throw new Error(`Content with Title: ${title} not found.`);
+    }
+
     return rows[0];
 }
 
 export const getContentsByParentID = async (id) => {
-    const query = `SELECT * FROM contents WHERE parent_id = $1`;
+    const query = `SELECT id, parent_id, title, type, can_open, tags, langs, status, text, options_bar, functions_bar FROM contents WHERE parent_id = $1`;
     const { rows } = await pool.query(query, [id]);
     return rows;
 }
 
 export const getRootContents = async () => {
-    const query = `SELECT * FROM contents WHERE parent_id IS NULL`;
+    const query = `SELECT id, parent_id, title, type, can_open, tags, langs, status, text, options_bar, functions_bar FROM contents WHERE parent_id IS NULL`;
     const { rows } = await pool.query(query);
     return rows;
 }
 
 export const getAllContentsForTree = async () => {
-    const query = `SELECT id, parent_id, title, icon FROM contents`;
+    const query = `SELECT id, parent_id, title FROM contents`;
     const { rows } = await pool.query(query);
     return rows;
+}
+
+export const getContentIconByID = async (id) => {
+    const query = `SELECT icon FROM contents WHERE id = $1`;
+    const { rows } = await pool.query(query, [id]);
+
+    if (rows.length === 0) {
+        throw new Error(`Content with ID ${id} not found.`);
+    }
+
+    return rows[0];
 }

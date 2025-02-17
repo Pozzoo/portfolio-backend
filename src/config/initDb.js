@@ -22,7 +22,7 @@ const createTables = async () => {
                 parent_id INT REFERENCES contents(id) ON DELETE CASCADE,
                 title TEXT UNIQUE NOT NULL,
                 type TEXT CHECK (type IN ('markdown', 'folder')) NOT NULL,
-                icon BYTEA NOT NULL,
+                icon BYTEA,
                 can_open BOOLEAN DEFAULT false,
                 tags INTEGER[],
                 langs INTEGER[],

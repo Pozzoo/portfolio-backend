@@ -2,8 +2,8 @@ import {
     createContent,
     deleteContentByID, getAllContentsForTree,
     getContentByID,
-    getContentByTitle, getContentsByParentID, getRootContents,
-    updateContentByID
+    getContentByTitle, getContentIconByID, getContentsByParentID, getRootContents,
+    updateContentByID, updateContentIconByID
 } from "../models/content.model.js";
 
 export const submitContent = async (req, res) => {
@@ -50,6 +50,24 @@ export const updateContent = async (req, res) => {
     }
 }
 
+export const updateIcon = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { icon } = req.body;
+
+        if (!id) {
+            return res.status(404).json({ message: "Content Not found", id: id });
+        }
+
+        const updatedContent = await updateContentIconByID(id, icon);
+
+        res.status(200).json({ message: "Content updated", content: updatedContent });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+}
+
 export const deleteContent = async (req, res) => {
     try {
         const { id } = req.params;
@@ -87,6 +105,7 @@ export const getFolderContent = async (req, res) => {
         }
 
         const contents = await getContentsByParentID(parentID);
+
         return res.status(200).json(contents);
     } catch (error) {
         console.log(error);
@@ -130,6 +149,26 @@ export const getContent = async (req, res) => {
 
         const content = await getContentByID(id);
         return res.status(200).json(content);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+}
+
+export const getContentIcon = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(404).json({ message: "No ID present"});
+        }
+
+        const icon = await getContentIconByID(id);
+
+        if (!((icon.icon instanceof Buffer) || (icon.icon instanceof Uint8Array))) return res.status(200).json({ message: "Content Not found", id: id });
+
+        res.writeHead(200, { "Content-Type": "image/png" });
+        return res.end(icon.icon);
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server error", error: error.message });
